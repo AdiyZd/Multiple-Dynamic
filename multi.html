@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistent Multiple Dynamic Elements</title>
+    <style>
+        .container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            position: relative;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="headingInput" placeholder="Masukkan teks untuk H1">
+    <textarea id="paragraphInput" placeholder="Masukkan teks untuk paragraf"></textarea>
+    <button onclick="generateContent()">Generate Content</button>
+
+    <div id="contentArea"></div>
+
+    <script>
+        // Fungsi untuk menyimpan array konten ke localStorage
+        function saveContentToLocalStorage(contentArray) {
+            localStorage.setItem("savedContentArray", JSON.stringify(contentArray));
+        }
+
+        // Fungsi untuk memuat array konten dari localStorage
+        function loadContentFromLocalStorage() {
+            const savedContentArray = JSON.parse(localStorage.getItem("savedContentArray")) || [];
+            savedContentArray.forEach(content => {
+                createContent(content.headingText, content.paragraphText);
+            });
+        }
+
+        // Fungsi utama untuk membuat container dengan elemen
+        function createContent(headingText, paragraphText) {
+            const container = document.createElement("div");
+            container.classList.add("container");
+
+            const heading = document.createElement("h1");
+            heading.textContent = headingText;
+
+            const paragraph = document.createElement("p");
+            paragraph.textContent = paragraphText;
+
+            // Tambah tombol hapus
+            const deleteButton = document.createElement("button");
+            deleteButton.classList.add("delete-btn");
+            deleteButton.textContent = "Hapus";
+            deleteButton.onclick = function () {
+                container.remove(); // Hapus elemen dari halaman
+                removeContentFromLocalStorage(headingText, paragraphText); // Hapus data spesifik dari localStorage
+            };
+
+            // Tambah elemen ke dalam container
+            container.appendChild(heading);
+            container.appendChild(paragraph);
+            container.appendChild(deleteButton); // Tambah tombol hapus ke container
+
+            document.getElementById("contentArea").appendChild(container);
+        }
+
+        // Fungsi untuk menangani input pengguna dan menyimpan ke localStorage
+        function generateContent() {
+            const headingText = document.getElementById("headingInput").value;
+            const paragraphText = document.getElementById("paragraphInput").value;
+
+            createContent(headingText, paragraphText);
+
+            // Simpan data baru ke dalam array di localStorage
+            const savedContentArray = JSON.parse(localStorage.getItem("savedContentArray")) || [];
+            savedContentArray.push({ headingText, paragraphText });
+            saveContentToLocalStorage(savedContentArray);
+        }
+
+        // Fungsi untuk menghapus item spesifik dari localStorage
+        function removeContentFromLocalStorage(headingText, paragraphText) {
+            let savedContentArray = JSON.parse(localStorage.getItem("savedContentArray")) || [];
+            // Filter item untuk menghapus item yang diinginkan
+            savedContentArray = savedContentArray.filter(content => content.headingText !== headingText || content.paragraphText !== paragraphText);
+            saveContentToLocalStorage(savedContentArray);
+        }
+
+        // Panggil fungsi untuk memuat konten saat halaman dibuka
+        window.onload = loadContentFromLocalStorage;
+    </script>
+</body>
+</html>
